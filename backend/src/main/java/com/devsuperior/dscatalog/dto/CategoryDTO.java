@@ -13,7 +13,6 @@ public class CategoryDTO implements Serializable {
     @Getter
     @Setter
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Getter

@@ -3,7 +3,7 @@ package com.devsuperior.dscatalog.services;
 import com.devsuperior.dscatalog.dto.CategoryDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.repository.CategoryRepository;
-import com.devsuperior.dscatalog.services.exceptions.EntityNotFoundException;
+import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
 @Service
 public class CategoryService {
     @Autowired
-    CategoryRepository categoryRepository;
+    CategoryRepository repository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
     public List<CategoryDTO> findAll() {
-        return categoryRepository.findAll()
+        return repository.findAll()
                 .parallelStream()
                 .map(CategoryDTO::new)
                 .collect(Collectors.toList());
@@ -26,8 +26,34 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public CategoryDTO findById(Long id) {
-        Category entity = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        var entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         return new CategoryDTO(entity);
+    }
+
+    @Transactional(readOnly = false)
+    public CategoryDTO insert(CategoryDTO dto) {
+        var entity = new Category();
+        entity.setName(dto.getName());
+        entity = repository.save(entity);
+        return new CategoryDTO(entity);
+    }
+
+    @Transactional(readOnly = false)
+    public CategoryDTO update(Long id, final CategoryDTO dto) {
+        try {
+
+            // cria apenas uma refência, sem puxar do banco de dados
+            var entity = repository.getOne(id);
+
+            entity.setName(dto.getName());
+
+            var newEntity = repository.save(entity);
+
+            return new CategoryDTO(newEntity);
+        } catch (javax.persistence.EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Id not found " + id);
+        }
     }
 }
