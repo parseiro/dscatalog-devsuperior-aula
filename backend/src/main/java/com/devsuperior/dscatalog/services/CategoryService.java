@@ -3,8 +3,11 @@ package com.devsuperior.dscatalog.services;
 import com.devsuperior.dscatalog.dto.CategoryDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.repository.CategoryRepository;
+import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +57,19 @@ public class CategoryService {
             return new CategoryDTO(newEntity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
+        }
+    }
+
+    // não se coloca @Transactional aqui pois queremos que venha a exception
+    public void delete(Long id) {
+        try {
+            repository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            // tentou deletar um ID que nao existe
+            throw new ResourceNotFoundException("Id not found " + id);
+        } catch (DataIntegrityViolationException e) {
+            // esta entidade está sendo usada por outra, não pode ser deletada
+            throw new DatabaseException("Integrity violation");
         }
     }
 }
