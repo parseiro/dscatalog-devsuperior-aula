@@ -42,11 +42,11 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
+<!--        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.20</version>
-        </dependency>
+        </dependency>-->
 
     </dependencies>
 

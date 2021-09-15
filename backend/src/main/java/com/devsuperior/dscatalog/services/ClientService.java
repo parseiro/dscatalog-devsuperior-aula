@@ -1,11 +1,8 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CategoryDTO;
-import com.devsuperior.dscatalog.dto.ProductDTO;
-import com.devsuperior.dscatalog.entities.Category;
-import com.devsuperior.dscatalog.entities.Product;
-import com.devsuperior.dscatalog.repository.CategoryRepository;
-import com.devsuperior.dscatalog.repository.ProductRepository;
+import com.devsuperior.dscatalog.dto.ClientDTO;
+import com.devsuperior.dscatalog.entities.Client;
+import com.devsuperior.dscatalog.repository.ClientRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,43 +14,39 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class ProductService {
+public class ClientService {
     @Autowired
-    ProductRepository repository;
-
-    @Autowired
-    CategoryRepository categoryRepository;
+    ClientRepository repository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
-    public List<ProductDTO> findAll() {
+    public List<ClientDTO> findAll() {
         return repository.findAll()
                 .parallelStream()
-                .map(ProductDTO::new)
+                .map(ClientDTO::new)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public ProductDTO findById(Long id) {
+    public ClientDTO findById(Long id) {
         var entity = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found"));
 
-        return new ProductDTO(entity, entity.getCategories());
+        return new ClientDTO(entity);
     }
 
     @Transactional(readOnly = false)
-    public ProductDTO insert(ProductDTO dto) {
-        var entity = new Product();
+    public ClientDTO insert(ClientDTO dto) {
+        var entity = new Client();
         copyDtoToEntity(dto, entity);
         entity = repository.save(entity);
-        return new ProductDTO(entity);
+        return new ClientDTO(entity);
     }
 
     @Transactional(readOnly = false)
-    public ProductDTO update(Long id, final ProductDTO dto) {
+    public ClientDTO update(Long id, final ClientDTO dto) {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
@@ -62,7 +55,7 @@ public class ProductService {
 
             var newEntity = repository.save(entity);
 
-            return new ProductDTO(newEntity);
+            return new ClientDTO(newEntity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
@@ -82,24 +75,16 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductDTO> findAllPaged(PageRequest pageRequest) {
+    public Page<ClientDTO> findAllPaged(PageRequest pageRequest) {
         return repository.findAll(pageRequest)
-                .map(ProductDTO::new);
+                .map(ClientDTO::new);
     }
 
-    private void copyDtoToEntity(ProductDTO dto, Product entity) {
+    private void copyDtoToEntity(ClientDTO dto, Client entity) {
         entity.setName(dto.getName());
-        entity.setDescription(dto.getDescription());
-        entity.setPrice(dto.getPrice());
-        entity.setImgUrl(dto.getImgUrl());
-        entity.setDate(dto.getDate());
-
-        Set<Category> entityCategories = entity.getCategories();
-        entityCategories.clear();
-
-        dto.getCategories().stream()
-                .map(CategoryDTO::getId)
-                .map(categoryRepository::getOne)
-                .forEach(entityCategories::add);
+        entity.setCpf(dto.getCpf());
+        entity.setIncome(dto.getIncome());
+        entity.setBirthDate(dto.getBirthDate());
+        entity.setChildren(dto.getChildren());
     }
 }

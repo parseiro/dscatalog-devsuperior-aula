@@ -1,29 +1,26 @@
 package com.devsuperior.dscatalog.resources;
 
-import com.devsuperior.dscatalog.dto.CategoryDTO;
-import com.devsuperior.dscatalog.services.CategoryService;
-import org.apache.coyote.Response;
+import com.devsuperior.dscatalog.dto.ClientDTO;
+import com.devsuperior.dscatalog.services.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
-@RequestMapping("/categories")
-public class CategoryResource {
+@RequestMapping("/clients")
+public class ClientResource {
     @Autowired
-    private CategoryService categoryService;
+    private ClientService clientService;
 
 
     @GetMapping
-    public ResponseEntity<Page<CategoryDTO>> findAll(
+    public ResponseEntity<Page<ClientDTO>> findAll(
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "linesPerPage", defaultValue = "12") Integer linesPerPage,
             @RequestParam(value = "direction", defaultValue = "ASC") String direction,
@@ -32,19 +29,19 @@ public class CategoryResource {
     ) {
         PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
 
-        Page<CategoryDTO> categories = categoryService.findAllPaged(pageRequest);
+        Page<ClientDTO> clients = clientService.findAllPaged(pageRequest);
 
-        return ResponseEntity.ok().body(categories);
+        return ResponseEntity.ok().body(clients);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDTO> findById(@PathVariable Long id) {
-        return ResponseEntity.ok().body(categoryService.findById(id));
+    public ResponseEntity<ClientDTO> findById(@PathVariable Long id) {
+        return ResponseEntity.ok().body(clientService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<CategoryDTO> insert(@RequestBody final CategoryDTO dto) {
-        var newDTO = categoryService.insert(dto);
+    public ResponseEntity<ClientDTO> insert(@RequestBody final ClientDTO dto) {
+        var newDTO = clientService.insert(dto);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -55,17 +52,17 @@ public class CategoryResource {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryDTO> update(
+    public ResponseEntity<ClientDTO> update(
             @PathVariable Long id,
-            @RequestBody final CategoryDTO dto
+            @RequestBody final ClientDTO dto
     ) {
-        var newDto = categoryService.update(id, dto);
+        var newDto = clientService.update(id, dto);
         return ResponseEntity.ok().body(newDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CategoryDTO> delete(@PathVariable Long id) {
-        categoryService.delete(id);
+    public ResponseEntity<ClientDTO> delete(@PathVariable Long id) {
+        clientService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
