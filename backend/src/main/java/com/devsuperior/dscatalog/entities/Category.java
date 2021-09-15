@@ -1,6 +1,7 @@
 package com.devsuperior.dscatalog.entities;
 
 import java.io.Serializable;
+import java.time.Instant;
 
 import lombok.*;
 
@@ -23,4 +24,22 @@ public class Category implements Serializable {
     @Setter
     private String name;
 
+    // convenção: armazenar sem timezone mas sempre será UTC
+    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+    @Getter
+    private Instant createdAt;
+
+    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+    @Getter
+    private Instant updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = Instant.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = Instant.now();
+    }
 }
