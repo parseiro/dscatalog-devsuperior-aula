@@ -19,15 +19,9 @@ public class ResourceExceptionHandler {
             HttpServletRequest request
     ) {
         HttpStatus status = HttpStatus.NOT_FOUND;
+        String errorMessage = "Entity not found";
 
-        StandardError err = new StandardError();
-        err.setTimestamp(Instant.now());
-        err.setStatus(status.value());
-        err.setError("Entity not found");
-        err.setMessage(e.getMessage());
-        err.setPath(request.getRequestURI());
-
-        return ResponseEntity.status(status).body(err);
+        return getStandardErrorResponseEntity(request, status, errorMessage, e.getMessage());
     }
 
     @ExceptionHandler(DatabaseException.class)
@@ -36,12 +30,21 @@ public class ResourceExceptionHandler {
             HttpServletRequest request
     ) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
+        String errorMessage = "Database exception";
 
+        return getStandardErrorResponseEntity(request, status, errorMessage, e.getMessage());
+    }
+
+    private ResponseEntity<StandardError> getStandardErrorResponseEntity(
+            HttpServletRequest request,
+            HttpStatus status,
+            String customErrorMessage,
+            String exceptionErrorMessage) {
         StandardError err = new StandardError();
         err.setTimestamp(Instant.now());
         err.setStatus(status.value());
-        err.setError("Database exception");
-        err.setMessage(e.getMessage());
+        err.setError(customErrorMessage);
+        err.setMessage(exceptionErrorMessage);
         err.setPath(request.getRequestURI());
 
         return ResponseEntity.status(status).body(err);
