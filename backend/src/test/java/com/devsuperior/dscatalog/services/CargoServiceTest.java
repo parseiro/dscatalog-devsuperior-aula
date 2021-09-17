@@ -1,7 +1,6 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CargoDTO;
-import com.devsuperior.dscatalog.entities.CargoEntity;
+import com.devsuperior.dscatalog.entities.Cargo;
 import com.devsuperior.dscatalog.repository.CargoRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,14 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -30,58 +26,56 @@ class CargoServiceTest {
     @InjectMocks
     private CargoService cargoService;
 
-    List<CargoEntity> cargoEntityList;
+    List<Cargo> cargoList;
 
     @BeforeEach
     public void setUp() {
-        cargoEntityList = new ArrayList<>();
+        cargoList = new ArrayList<>();
 
         {
-            var cargo = new CargoEntity();
+            var cargo = new Cargo();
             cargo.setId(1L);
             cargo.setName("RH");
-            cargoEntityList.add(cargo);
+            cargoList.add(cargo);
         }
         {
-            var cargo = new CargoEntity();
+            var cargo = new Cargo();
             cargo.setId(2L);
             cargo.setName("TI");
-            cargoEntityList.add(cargo);
+            cargoList.add(cargo);
         }
         {
-            var cargo = new CargoEntity();
+            var cargo = new Cargo();
             cargo.setId(3L);
             cargo.setName("Admin");
-            cargoEntityList.add(cargo);
+            cargoList.add(cargo);
         }
     }
 
     @AfterEach
     public void tearDown() {
-        cargoEntityList = null;
+        cargoList = null;
     }
 
     @Test
     void findAll() {
-        when(cargoRepository.findAll()).thenReturn(cargoEntityList);
+        when(cargoRepository.findAll()).thenReturn(cargoList);
 
         final var returnedDtoList = cargoService.findAll();
-        final var returnedEntityList = returnedDtoList.parallelStream()
-                .map(CargoEntity::new)
-                .collect(Collectors.toList());
+        final var returnedEntityList = returnedDtoList;
 
 //        System.err.println("Lista original: " + cargoEntityList);
 //        System.err.println("Lista retornada: " + returnedEntityList);
-        assertThat(returnedEntityList).containsExactlyInAnyOrderElementsOf(cargoEntityList);
+        assertThat(returnedEntityList).containsExactlyInAnyOrderElementsOf(cargoList);
     }
 
     @Test
     void findById() {
         long id = 1L;
 
-        final var cargoEntity = cargoEntityList.parallelStream()
+        final var cargoEntity = cargoList.parallelStream()
                 .filter(s -> s.getId() == id).findAny();
-        final var originalDto = new CargoDTO(cargoEntity.get());
+        final var originalDto = cargoEntity.get();
 
         when(cargoRepository.findById(id)).thenReturn(cargoEntity);
 
@@ -95,34 +89,34 @@ class CargoServiceTest {
 
     @Test
     void insert() {
-        final long lastId = cargoEntityList.size();
+        final long lastId = cargoList.size();
 
         when(cargoRepository.save(any())).thenAnswer(i -> {
-            final var argument = i.<CargoEntity>getArgument(0);
+            final var argument = i.<Cargo>getArgument(0);
 
-            final var savedEntity = new CargoEntity();
+            final var savedEntity = new Cargo();
             savedEntity.setId(lastId + 1);
             savedEntity.setName(argument.getName());
 
-            this.cargoEntityList.add(savedEntity);
+            this.cargoList.add(savedEntity);
 
             return savedEntity;
         });
 
         // the item is not there yet
-        assertThat(cargoEntityList.parallelStream().filter(s -> s.getId() == (lastId + 1)).findAny()).isEmpty();
+        assertThat(cargoList.parallelStream().filter(s -> s.getId() == (lastId + 1)).findAny()).isEmpty();
 
         String newName = "Online Shopping";
-        CargoDTO savedDto;
+        Cargo savedDto;
         {
-            final var newEntityDTO = new CargoDTO();
+            final var newEntityDTO = new Cargo();
             newEntityDTO.setId(3L); // must be ignored
             newEntityDTO.setName(newName);
             savedDto = cargoService.insert(newEntityDTO);
         }
 
 //        assertThat(cargoDTOList).containsOnlyOnce(savedDto);
-        final var entity = cargoEntityList.parallelStream()
+        final var entity = cargoList.parallelStream()
                 .filter(s -> s.getId() == (lastId + 1)).findAny();
         assertThat(entity).isPresent();
         assertThat(entity.get().getId()).isEqualTo(lastId + 1);
@@ -137,10 +131,10 @@ class CargoServiceTest {
     void delete() {
         long localId = 1L;
 
-        final var cargoEntity = cargoEntityList.parallelStream()
+        final var cargoEntity = cargoList.parallelStream()
                 .filter(s -> s.getId() == localId).findAny().get();
 
-        final var list = cargoEntityList;
+        final var list = cargoList;
 
         doAnswer(invocation -> {
                 var id = invocation.<Long>getArgument(0);
@@ -148,11 +142,11 @@ class CargoServiceTest {
                 return null;
         }).when(cargoRepository).deleteById(localId);
 
-        assertThat(cargoEntityList).containsOnlyOnce(cargoEntity);
+        assertThat(cargoList).containsOnlyOnce(cargoEntity);
 
         cargoService.delete(localId);
 
-        assertThat(cargoEntityList).doesNotContain(cargoEntity);
+        assertThat(cargoList).doesNotContain(cargoEntity);
     }
 
 /*    @Test

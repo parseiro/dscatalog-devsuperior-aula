@@ -1,6 +1,6 @@
 package com.devsuperior.dscatalog.resources;
 
-import com.devsuperior.dscatalog.dto.FuncionarioDTO;
+import com.devsuperior.dscatalog.entities.Funcionario;
 import com.devsuperior.dscatalog.services.FuncionarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,7 +20,7 @@ public class FuncionarioResource {
 
 
     @GetMapping
-    public ResponseEntity<Page<FuncionarioDTO>> findAll(
+    public ResponseEntity<Page<Funcionario>> findAll(
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "linesPerPage", defaultValue = "12") Integer linesPerPage,
             @RequestParam(value = "direction", defaultValue = "ASC") String direction,
@@ -29,18 +29,18 @@ public class FuncionarioResource {
     ) {
         PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
 
-        Page<FuncionarioDTO> funcionarios = funcionarioService.findAllPaged(pageRequest);
+        Page<Funcionario> funcionarios = funcionarioService.findAllPaged(pageRequest);
 
         return ResponseEntity.ok().body(funcionarios);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FuncionarioDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<Funcionario> findById(@PathVariable Long id) {
         return ResponseEntity.ok().body(funcionarioService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<FuncionarioDTO> insert(@RequestBody final FuncionarioDTO dto) {
+    public ResponseEntity<Funcionario> insert(@RequestBody final Funcionario dto) {
         var newDTO = funcionarioService.insert(dto);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -52,16 +52,16 @@ public class FuncionarioResource {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FuncionarioDTO> update(
+    public ResponseEntity<Funcionario> update(
             @PathVariable Long id,
-            @RequestBody final FuncionarioDTO dto
+            @RequestBody final Funcionario dto
     ) {
         var newDto = funcionarioService.update(id, dto);
         return ResponseEntity.ok().body(newDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<FuncionarioDTO> delete(@PathVariable Long id) {
+    public ResponseEntity<Funcionario> delete(@PathVariable Long id) {
         funcionarioService.delete(id);
         return ResponseEntity.noContent().build();
     }

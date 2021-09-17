@@ -1,9 +1,7 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CargoDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

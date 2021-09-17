@@ -1,7 +1,6 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CargoDTO;
-import com.devsuperior.dscatalog.entities.CargoEntity;
+import com.devsuperior.dscatalog.entities.Cargo;
 import com.devsuperior.dscatalog.repository.CargoRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
@@ -14,56 +13,42 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-public class CargoService implements CrudService<CargoEntity, CargoDTO, Long> {
+public class CargoService {
     @Autowired
     CargoRepository cargoRepository;
 
-    @Override
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
-    public List<CargoDTO> findAll() {
-        return cargoRepository.findAll()
-                .parallelStream()
-                .map(CargoDTO::new)
-                .collect(Collectors.toList());
+    public List<Cargo> findAll() {
+        return cargoRepository.findAll();
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public CargoDTO findById(Long id) {
-        var entity = cargoRepository.findById(id)
+    public Cargo findById(Long id) {
+        return cargoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cargo not found"));
-
-        return new CargoDTO(entity);
     }
 
-    @Override
     @Transactional(readOnly = false)
-    public CargoDTO insert(CargoDTO dto) {
-        final var entity = new CargoEntity(dto);
-        final var savedEntity = cargoRepository.save(entity);
-        return new CargoDTO(savedEntity);
+    public Cargo insert(Cargo dto) {
+        return cargoRepository.save(dto);
     }
 
-    @Override
     @Transactional(readOnly = false)
-    public CargoDTO update(Long id, final CargoDTO dto) {
+    public Cargo update(Long id, final Cargo dto) {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
             final var entity = cargoRepository.getOne(id);
             entity.setName(dto.getName());
-            final var savedEntity = cargoRepository.save(entity);
-            return new CargoDTO(savedEntity);
+            return cargoRepository.save(entity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
     }
 
     // não se coloca @Transactional aqui pois queremos que venha a exception
-    @Override
     public void delete(Long id) {
         try {
             cargoRepository.deleteById(id);
@@ -76,11 +61,9 @@ public class CargoService implements CrudService<CargoEntity, CargoDTO, Long> {
         }
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public Page<CargoDTO> findAllPaged(PageRequest pageRequest) {
-        return cargoRepository.findAll(pageRequest)
-                .map(CargoDTO::new);
+    public Page<Cargo> findAllPaged(PageRequest pageRequest) {
+        return cargoRepository.findAll(pageRequest);
     }
 
 }

@@ -9,7 +9,7 @@ import javax.persistence.*;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
 @Table(name = "tb_funcionarios")
-public class FuncionarioEntity {
+public class Funcionario {
     @Id
     @Getter
     @Setter
@@ -38,5 +38,5 @@ public class FuncionarioEntity {
     @Setter
     @ManyToOne(cascade = {CascadeType.PERSIST})
     @ToString.Include
-    private CargoEntity cargo;
+    private Cargo cargo;
 }

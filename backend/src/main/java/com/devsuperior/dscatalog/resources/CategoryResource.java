@@ -1,6 +1,6 @@
 package com.devsuperior.dscatalog.resources;
 
-import com.devsuperior.dscatalog.dto.CargoDTO;
+import com.devsuperior.dscatalog.entities.Cargo;
 import com.devsuperior.dscatalog.services.CargoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,7 +20,7 @@ public class CategoryResource {
 
 
     @GetMapping
-    public ResponseEntity<Page<CargoDTO>> findAll(
+    public ResponseEntity<Page<Cargo>> findAll(
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "linesPerPage", defaultValue = "12") Integer linesPerPage,
             @RequestParam(value = "direction", defaultValue = "ASC") String direction,
@@ -29,18 +29,18 @@ public class CategoryResource {
     ) {
         PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
 
-        Page<CargoDTO> categories = cargoService.findAllPaged(pageRequest);
+        Page<Cargo> categories = cargoService.findAllPaged(pageRequest);
 
         return ResponseEntity.ok().body(categories);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CargoDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<Cargo> findById(@PathVariable Long id) {
         return ResponseEntity.ok().body(cargoService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<CargoDTO> insert(@RequestBody final CargoDTO dto) {
+    public ResponseEntity<Cargo> insert(@RequestBody final Cargo dto) {
         var newDTO = cargoService.insert(dto);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -52,16 +52,16 @@ public class CategoryResource {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CargoDTO> update(
+    public ResponseEntity<Cargo> update(
             @PathVariable Long id,
-            @RequestBody final CargoDTO dto
+            @RequestBody final Cargo dto
     ) {
         var newDto = cargoService.update(id, dto);
         return ResponseEntity.ok().body(newDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CargoDTO> delete(@PathVariable Long id) {
+    public ResponseEntity<Cargo> delete(@PathVariable Long id) {
         cargoService.delete(id);
         return ResponseEntity.noContent().build();
     }

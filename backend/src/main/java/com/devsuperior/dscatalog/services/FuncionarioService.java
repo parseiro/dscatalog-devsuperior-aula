@@ -1,8 +1,7 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CargoDTO;
-import com.devsuperior.dscatalog.dto.FuncionarioDTO;
-import com.devsuperior.dscatalog.entities.FuncionarioEntity;
+import com.devsuperior.dscatalog.entities.Cargo;
+import com.devsuperior.dscatalog.entities.Funcionario;
 import com.devsuperior.dscatalog.repository.CargoRepository;
 import com.devsuperior.dscatalog.repository.FuncionarioRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
@@ -17,72 +16,57 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-public class FuncionarioService implements CrudService<FuncionarioEntity, FuncionarioDTO, Long> {
+public class FuncionarioService {
     @Autowired
     FuncionarioRepository funcionarioRepository;
 
     @Autowired
     CargoRepository cargoRepository;
 
-    @Override
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
-    public List<FuncionarioDTO> findAll() {
-        return funcionarioRepository.findAll()
-                .parallelStream()
-                .map(FuncionarioDTO::new)
-                .collect(Collectors.toList());
+    public List<Funcionario> findAll() {
+        return funcionarioRepository.findAll();
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public FuncionarioDTO findById(Long id) {
+    public Funcionario findById(Long id) {
         var entity = funcionarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        return new FuncionarioDTO(entity);
-    }
-
-    @Override
-    @Transactional(readOnly = false)
-    public FuncionarioDTO insert(FuncionarioDTO dto) {
-//        System.err.println("DTO: " + dto);
-        final var entity = new FuncionarioEntity();
-        copyDtoToEntity(dto, entity);
-//        System.err.println("Entity: " + entity);
-        final var savedEntity = funcionarioRepository.save(entity);
-//        System.err.println("Saved entity: " + savedEntity);
-        FuncionarioDTO funcionarioDTO = new FuncionarioDTO(savedEntity);
-//        System.err.println("FuncionarioDTO: " + funcionarioDTO);
-        return funcionarioDTO;
+        return entity;
     }
 
     @Transactional(readOnly = false)
-    public FuncionarioDTO insert(FuncionarioDTO funcionarioDto, CargoDTO newCargoDto, CargoService cargoService) {
-        final var CargoDTO = cargoService.insert(newCargoDto);
-        funcionarioDto.setCargo(newCargoDto);
-        return insert(funcionarioDto);
+    public Funcionario insert(Funcionario entity) {
+        return funcionarioRepository.save(entity);
     }
 
-    @Override
     @Transactional(readOnly = false)
-    public FuncionarioDTO update(Long id, final FuncionarioDTO dto) {
+    public Funcionario insert(Funcionario funcionarioDto, Cargo cargoDto) {
+        Cargo newCargo = new Cargo();
+        newCargo.setName(cargoDto.getName());
+
+        newCargo = cargoRepository.save(newCargo);
+        funcionarioDto.setCargo(newCargo);
+        return funcionarioRepository.save(funcionarioDto);
+    }
+
+    @Transactional(readOnly = false)
+    public Funcionario update(Long id, final Funcionario dto) {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
             final var entity = funcionarioRepository.getOne(id);
             copyDtoToEntity(dto, entity);
-            final var savedEntity = funcionarioRepository.save(entity);
-            return new FuncionarioDTO(savedEntity);
+            return funcionarioRepository.save(entity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
     }
 
     // não se coloca @Transactional aqui pois queremos que venha a exception
-    @Override
     public void delete(Long id) {
         try {
             funcionarioRepository.deleteById(id);
@@ -95,14 +79,12 @@ public class FuncionarioService implements CrudService<FuncionarioEntity, Funcio
         }
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public Page<FuncionarioDTO> findAllPaged(PageRequest pageRequest) {
-        return funcionarioRepository.findAll(pageRequest)
-                .map(FuncionarioDTO::new);
+    public Page<Funcionario> findAllPaged(PageRequest pageRequest) {
+        return funcionarioRepository.findAll(pageRequest);
     }
 
-    private void copyDtoToEntity(@NonNull FuncionarioDTO dto, @NonNull FuncionarioEntity entity) {
+    private void copyDtoToEntity(@NonNull Funcionario dto, @NonNull Funcionario entity) {
 //        assert(dto.getCargo() != null);
 
         entity.setName(dto.getName());
@@ -114,11 +96,4 @@ public class FuncionarioService implements CrudService<FuncionarioEntity, Funcio
             entity.setCargo(cargo);
         }
     }
-
-
-/*    public FuncionarioEntity createNewEntityFromDto(FuncionarioDTO dto) {
-        var entity = new FuncionarioEntity();
-        copyDtoToEntity(dto, entity);
-        return entity;
-    }*/
 }
