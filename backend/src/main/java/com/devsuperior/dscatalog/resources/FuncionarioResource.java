@@ -14,9 +14,9 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/products")
-public class ProductResource {
+public class FuncionarioResource {
     @Autowired
-    private FuncionarioService categoryService;
+    private FuncionarioService funcionarioService;
 
 
     @GetMapping
@@ -29,19 +29,19 @@ public class ProductResource {
     ) {
         PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
 
-        Page<FuncionarioDTO> categories = categoryService.findAllPaged(pageRequest);
+        Page<FuncionarioDTO> funcionarios = funcionarioService.findAllPaged(pageRequest);
 
-        return ResponseEntity.ok().body(categories);
+        return ResponseEntity.ok().body(funcionarios);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FuncionarioDTO> findById(@PathVariable Long id) {
-        return ResponseEntity.ok().body(categoryService.findById(id));
+        return ResponseEntity.ok().body(funcionarioService.findById(id));
     }
 
     @PostMapping
     public ResponseEntity<FuncionarioDTO> insert(@RequestBody final FuncionarioDTO dto) {
-        var newDTO = categoryService.insert(dto);
+        var newDTO = funcionarioService.insert(dto);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -56,13 +56,13 @@ public class ProductResource {
             @PathVariable Long id,
             @RequestBody final FuncionarioDTO dto
     ) {
-        var newDto = categoryService.update(id, dto);
+        var newDto = funcionarioService.update(id, dto);
         return ResponseEntity.ok().body(newDto);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<FuncionarioDTO> delete(@PathVariable Long id) {
-        categoryService.delete(id);
+        funcionarioService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

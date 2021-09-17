@@ -13,7 +13,7 @@ import javax.persistence.Table;
 @Entity
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "tb_product")
+@Table(name = "tb_funcionarios")
 public class FuncionarioEntity {
     @Id
     @Getter

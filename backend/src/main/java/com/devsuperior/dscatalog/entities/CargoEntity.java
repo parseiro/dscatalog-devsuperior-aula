@@ -9,7 +9,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "tb_category")
+@Table(name = "tb_cargos")
 @Entity
 public class CargoEntity implements Serializable {
     @Getter
