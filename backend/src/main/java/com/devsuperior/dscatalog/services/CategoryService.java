@@ -1,6 +1,5 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CategoryDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.repository.CategoryRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -22,31 +20,25 @@ public class CategoryService {
     CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
-    public List<CategoryDTO> findAll() {
-        return categoryRepository.findAll()
-                .parallelStream()
-                .map(CategoryDTO::new)
-                .collect(Collectors.toList());
+    public List<Category> findAll() {
+        return categoryRepository.findAll();
     }
 
     @Transactional(readOnly = true)
-    public CategoryDTO findById(Long id) {
-        final var entity = categoryRepository.findById(id)
+    public Category findById(Long id) {
+        return categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-
-        return new CategoryDTO(entity);
     }
 
     @Transactional(readOnly = false)
-    public CategoryDTO insert(CategoryDTO dto) {
+    public Category insert(Category dto) {
         final var entity = new Category();
         entity.setName(dto.getName());
-        Category savedEntity = categoryRepository.save(entity);
-        return new CategoryDTO(savedEntity);
+        return categoryRepository.save(entity);
     }
 
     @Transactional(readOnly = false)
-    public CategoryDTO update(Long id, final CategoryDTO dto) {
+    public Category update(Long id, final Category dto) {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
@@ -54,9 +46,7 @@ public class CategoryService {
 
             entity.setName(dto.getName());
 
-            Category savedEntity = categoryRepository.save(entity);
-
-            return new CategoryDTO(savedEntity);
+            return categoryRepository.save(entity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
@@ -76,8 +66,13 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CategoryDTO> findAllPaged(PageRequest pageRequest) {
-        return categoryRepository.findAll(pageRequest)
-                .map(CategoryDTO::new);
+    public Page<Category> findAllPaged(PageRequest pageRequest) {
+        return categoryRepository.findAll(pageRequest);
+    }
+
+    public Category copyDtoToEntity(final com.devsuperior.dscatalog.dto.CategoryDTO dto, final Category entity) {
+        entity.setName(dto.getName());
+
+        return entity;
     }
 }

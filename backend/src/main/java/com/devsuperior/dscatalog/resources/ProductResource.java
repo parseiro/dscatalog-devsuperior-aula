@@ -30,10 +30,9 @@ public class ProductResource {
     ) {
         PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
 
-        var products = productService.findAllPaged(pageRequest)
-                .map(ProductDTO::new);
+        var products = productService.findAllPaged(pageRequest);
 
-        return ResponseEntity.ok().body(products);
+        return ResponseEntity.ok().body(products.map(ProductDTO::new));
     }
 
     @GetMapping("/{id}")
