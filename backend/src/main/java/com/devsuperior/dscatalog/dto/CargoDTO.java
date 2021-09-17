@@ -1,15 +1,15 @@
 package com.devsuperior.dscatalog.dto;
 
-import com.devsuperior.dscatalog.entities.Category;
+import com.devsuperior.dscatalog.entities.CargoEntity;
 import lombok.*;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryDTO implements Serializable {
+public class CargoDTO implements Serializable {
     @Getter
     @Setter
     @EqualsAndHashCode.Include
@@ -19,7 +19,10 @@ public class CategoryDTO implements Serializable {
     @Setter
     private String name;
 
-    public CategoryDTO(Category entity) {
+    @Getter
+    private Set<FuncionarioDTO> funcionarios = new HashSet<>();
+
+    public CargoDTO(CargoEntity entity) {
         this.id = entity.getId();
         this.name = entity.getName();
     }

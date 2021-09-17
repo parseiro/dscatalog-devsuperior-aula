@@ -1,11 +1,10 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CategoryDTO;
-import com.devsuperior.dscatalog.dto.ProductDTO;
-import com.devsuperior.dscatalog.entities.Category;
-import com.devsuperior.dscatalog.entities.Product;
-import com.devsuperior.dscatalog.repository.CategoryRepository;
-import com.devsuperior.dscatalog.repository.ProductRepository;
+import com.devsuperior.dscatalog.dto.FuncionarioDTO;
+import com.devsuperior.dscatalog.entities.CargoEntity;
+import com.devsuperior.dscatalog.entities.FuncionarioEntity;
+import com.devsuperior.dscatalog.repository.CargoRepository;
+import com.devsuperior.dscatalog.repository.FuncionarioRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,52 +16,51 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class ProductService {
+public class FuncionarioService {
     @Autowired
-    ProductRepository repository;
+    FuncionarioRepository funcionarioRepository;
 
     @Autowired
-    CategoryRepository categoryRepository;
+    CargoRepository cargoRepository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
-    public List<ProductDTO> findAll() {
-        return repository.findAll()
+    public List<FuncionarioDTO> findAll() {
+        return funcionarioRepository.findAll()
                 .parallelStream()
-                .map(ProductDTO::new)
+                .map(FuncionarioDTO::new)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public ProductDTO findById(Long id) {
-        var entity = repository.findById(id)
+    public FuncionarioDTO findById(Long id) {
+        var entity = funcionarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        return new ProductDTO(entity, entity.getCategories());
+        return new FuncionarioDTO(entity);
     }
 
     @Transactional(readOnly = false)
-    public ProductDTO insert(ProductDTO dto) {
-        var entity = new Product();
+    public FuncionarioDTO insert(FuncionarioDTO dto) {
+        var entity = new FuncionarioEntity();
         copyDtoToEntity(dto, entity);
-        entity = repository.save(entity);
-        return new ProductDTO(entity);
+        entity = funcionarioRepository.save(entity);
+        return new FuncionarioDTO(entity);
     }
 
     @Transactional(readOnly = false)
-    public ProductDTO update(Long id, final ProductDTO dto) {
+    public FuncionarioDTO update(Long id, final FuncionarioDTO dto) {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
-            var entity = repository.getOne(id);
+            var entity = funcionarioRepository.getOne(id);
             copyDtoToEntity(dto, entity);
 
-            var newEntity = repository.save(entity);
+            var newEntity = funcionarioRepository.save(entity);
 
-            return new ProductDTO(newEntity);
+            return new FuncionarioDTO(newEntity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
@@ -71,7 +69,7 @@ public class ProductService {
     // não se coloca @Transactional aqui pois queremos que venha a exception
     public void delete(Long id) {
         try {
-            repository.deleteById(id);
+            funcionarioRepository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             // tentou deletar um ID que nao existe
             throw new ResourceNotFoundException("Id not found " + id);
@@ -82,24 +80,17 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductDTO> findAllPaged(PageRequest pageRequest) {
-        return repository.findAll(pageRequest)
-                .map(ProductDTO::new);
+    public Page<FuncionarioDTO> findAllPaged(PageRequest pageRequest) {
+        return funcionarioRepository.findAll(pageRequest)
+                .map(FuncionarioDTO::new);
     }
 
-    private void copyDtoToEntity(ProductDTO dto, Product entity) {
-        entity.setName(dto.getName());
-        entity.setDescription(dto.getDescription());
-        entity.setPrice(dto.getPrice());
-        entity.setImgUrl(dto.getImgUrl());
-        entity.setDate(dto.getDate());
+    private void copyDtoToEntity(FuncionarioDTO dto, FuncionarioEntity entity) {
+        entity.setNome(dto.getName());
+        entity.setSexo(dto.getSexo());
+        entity.setTelefone(dto.getTelefone());
 
-        Set<Category> entityCategories = entity.getCategories();
-        entityCategories.clear();
-
-        dto.getCategories().stream()
-                .map(CategoryDTO::getId)
-                .map(categoryRepository::getOne)
-                .forEach(entityCategories::add);
+        CargoEntity cargo = cargoRepository.getOne(dto.getCargo().getId());
+        entity.setCargo(cargo);
     }
 }
