@@ -58,11 +58,8 @@ public class ProductDTO {
         this.price = entity.getPrice();
         this.imgUrl = entity.getImgUrl();
         this.date = entity.getDate();
-    }
 
-    public ProductDTO(Product entity, Set<Category> categories) {
-        this(entity);
-        categories.stream()
+        entity.getCategories().parallelStream()
                 .map(CategoryDTO::new)
                 .forEach(c -> this.categories.add(c));
     }
