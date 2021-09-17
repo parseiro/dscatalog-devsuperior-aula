@@ -27,16 +27,16 @@ public class FuncionarioService {
     CargoRepository cargoRepository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
-    public List<FuncionarioDTO> findAll() {
-        return funcionarioRepository.findAll()
+    public List<ProductDTO> findAll() {
+        return repository.findAll()
                 .parallelStream()
                 .map(FuncionarioDTO::new)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public FuncionarioDTO findById(Long id) {
-        var entity = funcionarioRepository.findById(id)
+    public ProductDTO findById(Long id) {
+        var entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return new FuncionarioDTO(entity);
@@ -44,10 +44,10 @@ public class FuncionarioService {
 
     @Transactional(readOnly = false)
     public FuncionarioDTO insert(FuncionarioDTO dto) {
-        var entity = new FuncionarioEntity();
+        final var entity = new FuncionarioEntity();
         copyDtoToEntity(dto, entity);
-        entity = funcionarioRepository.save(entity);
-        return new FuncionarioDTO(entity);
+        final FuncionarioEntity savedEntity = funcionarioRepository.save(entity);
+        return new FuncionarioDTO(savedEntity);
     }
 
     @Transactional(readOnly = false)
@@ -55,12 +55,12 @@ public class FuncionarioService {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
-            var entity = funcionarioRepository.getOne(id);
+            final var entity = funcionarioRepository.getOne(id);
             copyDtoToEntity(dto, entity);
 
-            var newEntity = funcionarioRepository.save(entity);
+            final var savedEntity = funcionarioRepository.save(entity);
 
-            return new FuncionarioDTO(newEntity);
+            return new FuncionarioDTO(savedEntity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }

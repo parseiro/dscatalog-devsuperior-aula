@@ -41,8 +41,8 @@ public class CargoService {
     public CargoDTO insert(CargoDTO dto) {
         var entity = new CargoEntity();
         entity.setName(dto.getName());
-        entity = cargoRepository.save(entity);
-        return new CargoDTO(entity);
+        Cargo savedEntity = cargoRepository.save(entity);
+        return new CargoDTO(savedEntity);
     }
 
     @Transactional(readOnly = false)
