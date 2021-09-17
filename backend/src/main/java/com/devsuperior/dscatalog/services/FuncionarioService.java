@@ -1,13 +1,13 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.FuncionarioDTO;
-import com.devsuperior.dscatalog.entities.CargoEntity;
-import com.devsuperior.dscatalog.entities.FuncionarioEntity;
-import com.devsuperior.dscatalog.repository.CargoRepository;
-import com.devsuperior.dscatalog.repository.FuncionarioRepository;
+import com.devsuperior.dscatalog.dto.CategoryDTO;
+import com.devsuperior.dscatalog.dto.ProductDTO;
+import com.devsuperior.dscatalog.entities.Category;
+import com.devsuperior.dscatalog.entities.Product;
+import com.devsuperior.dscatalog.repository.CategoryRepository;
+import com.devsuperior.dscatalog.repository.ProductRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
-import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -40,7 +40,7 @@ public class FuncionarioService {
         var entity = funcionarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        return new FuncionarioDTO(entity);
+        return new ProductDTO(entity, entity.getCategories());
     }
 
     @Transactional(readOnly = false)
