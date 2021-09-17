@@ -1,5 +1,6 @@
 package com.devsuperior.dscatalog.services;
 
+import com.devsuperior.dscatalog.dto.CargoDTO;
 import com.devsuperior.dscatalog.dto.FuncionarioDTO;
 import com.devsuperior.dscatalog.entities.FuncionarioEntity;
 import com.devsuperior.dscatalog.repository.CargoRepository;
@@ -47,14 +48,26 @@ public class FuncionarioService implements CrudService<FuncionarioEntity, Funcio
     @Override
     @Transactional(readOnly = false)
     public FuncionarioDTO insert(FuncionarioDTO dto) {
+//        System.err.println("DTO: " + dto);
         final var entity = new FuncionarioEntity();
         copyDtoToEntity(dto, entity);
+//        System.err.println("Entity: " + entity);
         final var savedEntity = funcionarioRepository.save(entity);
-        return new FuncionarioDTO(savedEntity);
+//        System.err.println("Saved entity: " + savedEntity);
+        FuncionarioDTO funcionarioDTO = new FuncionarioDTO(savedEntity);
+//        System.err.println("FuncionarioDTO: " + funcionarioDTO);
+        return funcionarioDTO;
+    }
+
+    @Transactional(readOnly = false)
+    public FuncionarioDTO insert(FuncionarioDTO funcionarioDto, CargoDTO newCargoDto, CargoService cargoService) {
+        final var CargoDTO = cargoService.insert(newCargoDto);
+        funcionarioDto.setCargo(newCargoDto);
+        return insert(funcionarioDto);
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = false)
     public FuncionarioDTO update(Long id, final FuncionarioDTO dto) {
         try {
 
@@ -101,6 +114,7 @@ public class FuncionarioService implements CrudService<FuncionarioEntity, Funcio
             entity.setCargo(cargo);
         }
     }
+
 
 /*    public FuncionarioEntity createNewEntityFromDto(FuncionarioDTO dto) {
         var entity = new FuncionarioEntity();

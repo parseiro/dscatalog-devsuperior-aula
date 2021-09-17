@@ -1,13 +1,11 @@
 package com.devsuperior.dscatalog.dto;
 
 import com.devsuperior.dscatalog.entities.FuncionarioEntity;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class FuncionarioDTO {
     @Getter
     @Setter
@@ -27,6 +25,7 @@ public class FuncionarioDTO {
     private String telefone;
 
     @Getter
+    @Setter
     private CargoDTO cargo;
 
     public FuncionarioDTO(FuncionarioEntity entity) {

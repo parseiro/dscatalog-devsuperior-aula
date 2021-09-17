@@ -1,5 +1,6 @@
 package com.devsuperior.dscatalog.services;
 
+import com.devsuperior.dscatalog.dto.CargoDTO;
 import com.devsuperior.dscatalog.dto.FuncionarioDTO;
 import com.devsuperior.dscatalog.entities.CargoEntity;
 import com.devsuperior.dscatalog.entities.FuncionarioEntity;
@@ -38,6 +39,9 @@ class FuncionarioServiceTest {
     @InjectMocks
     private FuncionarioService funcionarioService;
 
+    @Autowired
+    private CargoService cargoService;
+
     List<CargoEntity> cargoEntityList;
     List<FuncionarioEntity> funcionarioEntityList;
 
@@ -45,6 +49,38 @@ class FuncionarioServiceTest {
     public void setUp() {
         cargoEntityList = new ArrayList<>();
         funcionarioEntityList = new ArrayList<>();
+
+        when(funcionarioRepository.save(any())).thenAnswer(i -> {
+            final var argument = i.<FuncionarioEntity>getArgument(0);
+
+            final var savedEntity = new FuncionarioEntity();
+            savedEntity.setId(funcionarioEntityList.size() + 1L);
+            savedEntity.setName(argument.getName());
+            savedEntity.setSexo(argument.getSexo());
+            savedEntity.setTelefone(argument.getTelefone());
+            savedEntity.setCargo(argument.getCargo());
+
+            this.funcionarioEntityList.add(savedEntity);
+
+            return savedEntity;
+        });
+
+        when(cargoRepository.getOne(anyLong())).thenAnswer(i -> {
+            final var id = i.<Long>getArgument(0);
+            return cargoEntityList.parallelStream().filter(s -> s.getId().equals(id)).findAny().get();
+        });
+
+        when(cargoRepository.save(any())).thenAnswer(i -> {
+            final var argument = i.<CargoEntity>getArgument(0);
+
+            final var savedEntity = new CargoEntity();
+            savedEntity.setId(cargoEntityList.size() + 1L);
+            savedEntity.setName(argument.getName());
+
+            this.cargoEntityList.add(savedEntity);
+
+            return savedEntity;
+        });
 
         {
             var cargo = new CargoEntity();
@@ -88,11 +124,6 @@ class FuncionarioServiceTest {
     void findAll() {
         when(funcionarioRepository.findAll()).thenReturn(funcionarioEntityList);
 
-        when(cargoRepository.getOne(anyLong())).thenAnswer(i -> {
-            final var id = i.<Long>getArgument(0);
-            return cargoEntityList.parallelStream().filter(s -> s.getId().equals(id)).findAny().get();
-        });
-
         final var returnedDtoList = funcionarioService.findAll();
         final var returnedEntityList = returnedDtoList.parallelStream()
                 //.map(funcionarioService::createNewEntityFromDto)
@@ -120,11 +151,6 @@ class FuncionarioServiceTest {
 
         when(funcionarioRepository.findById(searchedId)).thenReturn(entity);
 
-        when(cargoRepository.getOne(anyLong())).thenAnswer(i -> {
-            final var id = i.<Long>getArgument(0);
-            return cargoEntityList.parallelStream().filter(s -> s.getId().equals(id)).findAny().get();
-        });
-
         final var returnerDto = funcionarioService.findById(searchedId);
 
 //        assertThat(originalDto.getId()).isEqualTo(returnerDto.getId());
@@ -134,37 +160,90 @@ class FuncionarioServiceTest {
     }
 
     @Test
-    void insert() {
+    void insertWithExistingCargo() {
         final long lastId = funcionarioEntityList.size();
-
-        when(funcionarioRepository.save(any())).thenAnswer(i -> {
-            final var argument = i.<FuncionarioEntity>getArgument(0);
-
-            final var savedEntity = new FuncionarioEntity();
-            savedEntity.setId(lastId + 1);
-            savedEntity.setName(argument.getName());
-
-            this.funcionarioEntityList.add(savedEntity);
-
-            return savedEntity;
-        });
 
         // the item is not there yet
         assertThat(funcionarioEntityList.parallelStream().filter(s -> s.getId() == (lastId + 1)).findAny()).isEmpty();
 
         String newName = "Online Shopping";
-        FuncionarioDTO savedDto;
+        String sexo = "X";
+        String telefone = "666";
+        FuncionarioDTO newEntityDTO, savedDto;
+        var cargo = cargoEntityList.parallelStream().filter(s -> s.getId().equals(1L)).findAny().get();
         {
-            final var newEntityDTO = new FuncionarioDTO();
+            newEntityDTO = new FuncionarioDTO();
             newEntityDTO.setId(3L); // must be ignored
             newEntityDTO.setName(newName);
+            newEntityDTO.setSexo(sexo);
+            newEntityDTO.setTelefone(telefone);
+            newEntityDTO.setCargo(new CargoDTO(cargo));
             savedDto = funcionarioService.insert(newEntityDTO);
         }
 
-        final var entity = funcionarioEntityList.parallelStream().filter(s -> s.getId() == (lastId + 1)).findAny();
-        assertThat(entity).isPresent();
-        assertThat(entity.get().getId()).isEqualTo(lastId + 1);
-        assertThat(entity.get().getName()).isEqualTo(newName);
+
+//        System.err.println("Entidade enviada: " + newEntityDTO);
+//        System.err.println("Entidade recebida: " + savedDto);
+
+        final var savedEntity = funcionarioEntityList.parallelStream().filter(s -> s.getId() == (lastId + 1)).findAny();
+        assertThat(savedEntity).isPresent();
+        assertThat(savedEntity.get().getId()).isEqualTo(lastId + 1);
+        assertThat(savedEntity.get().getName()).isEqualTo(newName);
+        assertThat(savedEntity.get().getSexo()).isEqualTo(sexo);
+        assertThat(savedEntity.get().getTelefone()).isEqualTo(telefone);
+        assertThat(savedEntity.get().getCargo()).isEqualTo(cargo);
+    }
+
+    @Test
+    void insertWithNewCargo() {
+        when(cargoRepository.save(any())).thenAnswer(i -> {
+            final var argument = i.<CargoEntity>getArgument(0);
+
+            final var savedEntity = new CargoEntity();
+            savedEntity.setId(cargoEntityList.size() + 1L);
+            savedEntity.setName(argument.getName());
+
+            this.cargoEntityList.add(savedEntity);
+
+            return savedEntity;
+        });
+
+        final long lastId = funcionarioEntityList.size();
+
+        // the item is not there yet
+        assertThat(funcionarioEntityList.parallelStream().filter(s -> s.getId() == (lastId + 1)).findAny()).isEmpty();
+
+        String newName = "Online Shopping";
+        String sexo = "X";
+        String telefone = "666";
+        FuncionarioDTO newEntityDTO, savedDto;
+
+        var newCargo = new CargoEntity();
+        newCargo.setId(cargoEntityList.size() + 1L);
+        newCargo.setName("New Cargo");
+
+        {
+            newEntityDTO = new FuncionarioDTO();
+            newEntityDTO.setId(3L); // must be ignored
+            newEntityDTO.setName(newName);
+            newEntityDTO.setSexo(sexo);
+            newEntityDTO.setTelefone(telefone);
+            CargoDTO newCargoDto = new CargoDTO(newCargo);
+            newEntityDTO.setCargo(newCargoDto);
+            savedDto = funcionarioService.insert(newEntityDTO, newCargoDto, cargoService);
+        }
+
+
+//        System.err.println("Entidade enviada: " + newEntityDTO);
+//        System.err.println("Entidade recebida: " + savedDto);
+
+        final var savedEntity = funcionarioEntityList.parallelStream().filter(s -> s.getId() == (lastId + 1)).findAny();
+        assertThat(savedEntity).isPresent();
+        assertThat(savedEntity.get().getId()).isEqualTo(lastId + 1);
+        assertThat(savedEntity.get().getName()).isEqualTo(newName);
+        assertThat(savedEntity.get().getSexo()).isEqualTo(sexo);
+        assertThat(savedEntity.get().getTelefone()).isEqualTo(telefone);
+        assertThat(savedEntity.get().getCargo()).isEqualTo(newCargo);
     }
 
 /*    @Test
