@@ -7,6 +7,7 @@ import com.devsuperior.dscatalog.repository.CargoRepository;
 import com.devsuperior.dscatalog.repository.FuncionarioRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -27,16 +28,16 @@ public class FuncionarioService {
     CargoRepository cargoRepository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
-    public List<ProductDTO> findAll() {
-        return repository.findAll()
+    public List<FuncionarioDTO> findAll() {
+        return funcionarioRepository.findAll()
                 .parallelStream()
                 .map(FuncionarioDTO::new)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public ProductDTO findById(Long id) {
-        var entity = repository.findById(id)
+    public FuncionarioDTO findById(Long id) {
+        var entity = funcionarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return new FuncionarioDTO(entity);
@@ -46,7 +47,7 @@ public class FuncionarioService {
     public FuncionarioDTO insert(FuncionarioDTO dto) {
         final var entity = new FuncionarioEntity();
         copyDtoToEntity(dto, entity);
-        final FuncionarioEntity savedEntity = funcionarioRepository.save(entity);
+        final var savedEntity = funcionarioRepository.save(entity);
         return new FuncionarioDTO(savedEntity);
     }
 
@@ -57,9 +58,7 @@ public class FuncionarioService {
             // cria apenas uma refência, sem puxar do banco de dados
             final var entity = funcionarioRepository.getOne(id);
             copyDtoToEntity(dto, entity);
-
             final var savedEntity = funcionarioRepository.save(entity);
-
             return new FuncionarioDTO(savedEntity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
@@ -85,7 +84,9 @@ public class FuncionarioService {
                 .map(FuncionarioDTO::new);
     }
 
-    private void copyDtoToEntity(FuncionarioDTO dto, FuncionarioEntity entity) {
+    private void copyDtoToEntity(@NonNull FuncionarioDTO dto, @NonNull FuncionarioEntity entity) {
+        assert(dto.getCargo() != null);
+
         entity.setNome(dto.getName());
         entity.setSexo(dto.getSexo());
         entity.setTelefone(dto.getTelefone());

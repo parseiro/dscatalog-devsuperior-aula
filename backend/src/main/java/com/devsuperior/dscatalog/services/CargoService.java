@@ -39,9 +39,9 @@ public class CargoService {
 
     @Transactional(readOnly = false)
     public CargoDTO insert(CargoDTO dto) {
-        var entity = new CargoEntity();
+        final var entity = new CargoEntity();
         entity.setName(dto.getName());
-        Cargo savedEntity = cargoRepository.save(entity);
+        final var savedEntity = cargoRepository.save(entity);
         return new CargoDTO(savedEntity);
     }
 
@@ -50,13 +50,10 @@ public class CargoService {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
-            var entity = cargoRepository.getOne(id);
-
+            final var entity = cargoRepository.getOne(id);
             entity.setName(dto.getName());
-
-            var newEntity = cargoRepository.save(entity);
-
-            return new CargoDTO(newEntity);
+            final var savedEntity = cargoRepository.save(entity);
+            return new CargoDTO(savedEntity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
