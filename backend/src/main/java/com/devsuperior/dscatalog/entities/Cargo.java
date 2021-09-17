@@ -27,6 +27,6 @@ public class Cargo implements Serializable {
     private String name;
 
     @Getter
-    @OneToMany(mappedBy = "cargo", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "cargo", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private Set<Funcionario> funcionarios;
 }

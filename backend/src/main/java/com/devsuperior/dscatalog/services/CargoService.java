@@ -19,6 +19,15 @@ public class CargoService {
     @Autowired
     CargoRepository cargoRepository;
 
+    @Transactional(readOnly = true)
+    public void printCargosComFuncionarios() {
+        List<Cargo> cargos = cargoRepository.findAll();
+        cargos.forEach(s -> {
+            System.out.println("// Cargo: " + s.getName());
+            s.getFuncionarios().forEach(f -> System.out.println("// --> Funcionario: " + f.getName()));
+        });
+    }
+
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
     public List<Cargo> findAll() {
         return cargoRepository.findAll();
@@ -64,6 +73,10 @@ public class CargoService {
     @Transactional(readOnly = true)
     public Page<Cargo> findAllPaged(PageRequest pageRequest) {
         return cargoRepository.findAll(pageRequest);
+    }
+
+    public void deleteAll() {
+        cargoRepository.deleteAll();
     }
 
 }

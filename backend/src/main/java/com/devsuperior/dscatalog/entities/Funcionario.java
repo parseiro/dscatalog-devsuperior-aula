@@ -36,7 +36,7 @@ public class Funcionario {
     @JoinColumn
     @Getter
     @Setter
-    @ManyToOne(cascade = {CascadeType.PERSIST})
+    @ManyToOne
     @ToString.Include
     private Cargo cargo;
 }

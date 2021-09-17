@@ -12,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,29 @@ public class FuncionarioService {
 
     @Autowired
     CargoRepository cargoRepository;
+
+    @Transactional(readOnly = true)
+    public void quantosFuncionarios() {
+        long quantos = funcionarioRepository.count();
+        System.out.println("// Há no repositório " + quantos + " funcionários");
+    }
+
+    @Transactional(readOnly = true)
+    public void printFuncionariosSortByName() {
+        List<Funcionario> funcionarios = funcionarioRepository.findAll(Sort.by("name"));
+        System.out.println("Todos os funcionários ordenados por nome crescente");
+        funcionarios.forEach(s -> {
+            System.out.println("// Funcionario: " + s);
+        });
+    }
+
+    @Transactional(readOnly = true)
+    public void printFuncionariosComCargo() {
+        List<Funcionario> funcionarios = funcionarioRepository.findAll();
+        funcionarios.forEach(s -> {
+            System.out.println("// Funcionario: " + s);
+        });
+    }
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
     public List<Funcionario> findAll() {
@@ -95,5 +119,9 @@ public class FuncionarioService {
             var cargo = cargoRepository.getOne(dto.getCargo().getId());
             entity.setCargo(cargo);
         }
+    }
+
+    public void deleteAll() {
+        funcionarioRepository.deleteAll();
     }
 }
