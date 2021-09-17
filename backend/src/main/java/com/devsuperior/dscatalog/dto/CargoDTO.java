@@ -9,14 +9,19 @@ import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 public class CargoDTO implements Serializable {
     @Getter
     @Setter
     @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     @Getter
     @Setter
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private String name;
 
     @Getter

@@ -17,10 +17,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class CargoService {
+public class CargoService implements CrudService<CargoEntity, CargoDTO, Long> {
     @Autowired
     CargoRepository cargoRepository;
 
+    @Override
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
     public List<CargoDTO> findAll() {
         return cargoRepository.findAll()
@@ -29,22 +30,24 @@ public class CargoService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public CargoDTO findById(Long id) {
         var entity = cargoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cargo not found"));
 
         return new CargoDTO(entity);
     }
 
+    @Override
     @Transactional(readOnly = false)
     public CargoDTO insert(CargoDTO dto) {
-        final var entity = new CargoEntity();
-        entity.setName(dto.getName());
+        final var entity = new CargoEntity(dto);
         final var savedEntity = cargoRepository.save(entity);
         return new CargoDTO(savedEntity);
     }
 
+    @Override
     @Transactional(readOnly = false)
     public CargoDTO update(Long id, final CargoDTO dto) {
         try {
@@ -60,6 +63,7 @@ public class CargoService {
     }
 
     // não se coloca @Transactional aqui pois queremos que venha a exception
+    @Override
     public void delete(Long id) {
         try {
             cargoRepository.deleteById(id);
@@ -72,9 +76,11 @@ public class CargoService {
         }
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<CargoDTO> findAllPaged(PageRequest pageRequest) {
         return cargoRepository.findAll(pageRequest)
                 .map(CargoDTO::new);
     }
+
 }

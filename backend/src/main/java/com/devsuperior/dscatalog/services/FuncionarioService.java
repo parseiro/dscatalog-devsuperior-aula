@@ -1,6 +1,8 @@
 package com.devsuperior.dscatalog.services;
 
+import com.devsuperior.dscatalog.dto.CargoDTO;
 import com.devsuperior.dscatalog.dto.FuncionarioDTO;
+import com.devsuperior.dscatalog.entities.CargoEntity;
 import com.devsuperior.dscatalog.entities.FuncionarioEntity;
 import com.devsuperior.dscatalog.repository.CargoRepository;
 import com.devsuperior.dscatalog.repository.FuncionarioRepository;
@@ -19,13 +21,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class FuncionarioService {
+public class FuncionarioService implements CrudService<FuncionarioEntity, FuncionarioDTO, Long> {
     @Autowired
     FuncionarioRepository funcionarioRepository;
 
     @Autowired
     CargoRepository cargoRepository;
 
+    @Override
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
     public List<FuncionarioDTO> findAll() {
         return funcionarioRepository.findAll()
@@ -34,6 +37,7 @@ public class FuncionarioService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public FuncionarioDTO findById(Long id) {
         var entity = funcionarioRepository.findById(id)
@@ -42,6 +46,7 @@ public class FuncionarioService {
         return new FuncionarioDTO(entity);
     }
 
+    @Override
     @Transactional(readOnly = false)
     public FuncionarioDTO insert(FuncionarioDTO dto) {
         final var entity = new FuncionarioEntity();
@@ -50,6 +55,7 @@ public class FuncionarioService {
         return new FuncionarioDTO(savedEntity);
     }
 
+    @Override
     @Transactional(readOnly = false)
     public FuncionarioDTO update(Long id, final FuncionarioDTO dto) {
         try {
@@ -65,6 +71,7 @@ public class FuncionarioService {
     }
 
     // não se coloca @Transactional aqui pois queremos que venha a exception
+    @Override
     public void delete(Long id) {
         try {
             funcionarioRepository.deleteById(id);
@@ -77,14 +84,15 @@ public class FuncionarioService {
         }
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<FuncionarioDTO> findAllPaged(PageRequest pageRequest) {
         return funcionarioRepository.findAll(pageRequest)
                 .map(FuncionarioDTO::new);
     }
 
-    private void copyDtoToEntity(@NonNull FuncionarioDTO dto, @NonNull FuncionarioEntity entity) {
-        assert(dto.getCargo() != null);
+    public void copyDtoToEntity(@NonNull FuncionarioDTO dto, @NonNull FuncionarioEntity entity) {
+//        assert(dto.getCargo() != null);
 
         entity.setNome(dto.getName());
         entity.setSexo(dto.getSexo());
