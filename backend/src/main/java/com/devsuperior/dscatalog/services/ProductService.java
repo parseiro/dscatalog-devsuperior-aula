@@ -1,7 +1,5 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CategoryDTO;
-import com.devsuperior.dscatalog.dto.ProductDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.entities.Product;
 import com.devsuperior.dscatalog.repository.CategoryRepository;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -29,38 +26,31 @@ public class ProductService {
     CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
-    public List<ProductDTO> findAll() {
-        return productRepository.findAll()
-                .parallelStream()
-                .map(ProductDTO::new)
-                .collect(Collectors.toList());
+    public List<Product> findAll() {
+        return productRepository.findAll();
     }
 
     @Transactional(readOnly = true)
-    public ProductDTO findById(Long id) {
-        var entity = productRepository.findById(id)
+    public Product findById(Long id) {
+        return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        return new ProductDTO(entity, entity.getCategories());
     }
 
     @Transactional(readOnly = false)
-    public ProductDTO insert(ProductDTO dto) {
-        final var entity = new Product();
-        copyDtoToEntity(dto, entity);
-        final var savedEntity = productRepository.save(entity);
-        return new ProductDTO(savedEntity);
+    public Product insert(Product dto) {
+        final var entity = copyDtoToEntity(dto, new Product());
+        return productRepository.save(entity);
     }
 
     @Transactional(readOnly = false)
-    public ProductDTO update(Long id, final ProductDTO dto) {
+    public Product update(Long id, final Product dto) {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
             final var entity = productRepository.getOne(id);
             copyDtoToEntity(dto, entity);
             final var savedEntity = productRepository.save(entity);
-            return new ProductDTO(savedEntity);
+            return savedEntity;
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
@@ -80,12 +70,11 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductDTO> findAllPaged(PageRequest pageRequest) {
-        return productRepository.findAll(pageRequest)
-                .map(ProductDTO::new);
+    public Page<Product> findAllPaged(PageRequest pageRequest) {
+        return productRepository.findAll(pageRequest);
     }
 
-    private void copyDtoToEntity(ProductDTO dto, Product entity) {
+    public Product copyDtoToEntity(final Product dto, final Product entity) {
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
         entity.setPrice(dto.getPrice());
@@ -93,11 +82,29 @@ public class ProductService {
         entity.setDate(dto.getDate());
 
         Set<Category> entityCategories = entity.getCategories();
-        entityCategories.clear();
+//        entityCategories.addAll(dto.getCategories());
 
         dto.getCategories().stream()
-                .map(CategoryDTO::getId)
+                .map(Category::getId)
                 .map(categoryRepository::getOne)
                 .forEach(entityCategories::add);
+        return entity;
+    }
+
+    public Product copyDtoToEntity(final com.devsuperior.dscatalog.dto.ProductDTO dto, final Product entity) {
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
+        entity.setPrice(dto.getPrice());
+        entity.setImgUrl(dto.getImgUrl());
+        entity.setDate(dto.getDate());
+
+        Set<Category> entityCategories = entity.getCategories();
+//        entityCategories.addAll(dto.getCategories());
+
+        dto.getCategories().stream()
+                .map(com.devsuperior.dscatalog.dto.CategoryDTO::getId)
+                .map(categoryRepository::getOne)
+                .forEach(entityCategories::add);
+        return entity;
     }
 }

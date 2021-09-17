@@ -1,6 +1,7 @@
 package com.devsuperior.dscatalog.resources;
 
 import com.devsuperior.dscatalog.dto.ProductDTO;
+import com.devsuperior.dscatalog.entities.Product;
 import com.devsuperior.dscatalog.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,7 @@ import java.net.URI;
 @RequestMapping("/products")
 public class ProductResource {
     @Autowired
-    private ProductService categoryService;
+    private ProductService productService;
 
 
     @GetMapping
@@ -29,26 +30,28 @@ public class ProductResource {
     ) {
         PageRequest pageRequest = PageRequest.of(page, linesPerPage, Sort.Direction.valueOf(direction), orderBy);
 
-        Page<ProductDTO> categories = categoryService.findAllPaged(pageRequest);
+        var products = productService.findAllPaged(pageRequest)
+                .map(ProductDTO::new);
 
-        return ResponseEntity.ok().body(categories);
+        return ResponseEntity.ok().body(products);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> findById(@PathVariable Long id) {
-        return ResponseEntity.ok().body(categoryService.findById(id));
+        var dto = new ProductDTO(productService.findById(id));
+        return ResponseEntity.ok().body(dto);
     }
 
     @PostMapping
     public ResponseEntity<ProductDTO> insert(@RequestBody final ProductDTO dto) {
-        var newDTO = categoryService.insert(dto);
+        var newDTO = productService.insert(productService.copyDtoToEntity(dto, new Product()));
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(newDTO.getId())
                 .toUri();
 
-        return ResponseEntity.created(uri).body(newDTO);
+        return ResponseEntity.created(uri).body(new ProductDTO(newDTO));
     }
 
     @PutMapping("/{id}")
@@ -56,13 +59,14 @@ public class ProductResource {
             @PathVariable Long id,
             @RequestBody final ProductDTO dto
     ) {
-        var newDto = categoryService.update(id, dto);
-        return ResponseEntity.ok().body(newDto);
+        final var converted = productService.copyDtoToEntity(dto, new Product());
+        final var newProduct = productService.update(id, converted);
+        return ResponseEntity.ok().body(new ProductDTO(newProduct));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ProductDTO> delete(@PathVariable Long id) {
-        categoryService.delete(id);
+        productService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
