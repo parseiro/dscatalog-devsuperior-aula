@@ -23,14 +23,14 @@ import java.util.stream.Collectors;
 @Service
 public class ProductService {
     @Autowired
-    ProductRepository repository;
+    ProductRepository productRepository;
 
     @Autowired
     CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
     public List<ProductDTO> findAll() {
-        return repository.findAll()
+        return productRepository.findAll()
                 .parallelStream()
                 .map(ProductDTO::new)
                 .collect(Collectors.toList());
@@ -38,7 +38,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDTO findById(Long id) {
-        var entity = repository.findById(id)
+        var entity = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return new ProductDTO(entity, entity.getCategories());
@@ -46,10 +46,10 @@ public class ProductService {
 
     @Transactional(readOnly = false)
     public ProductDTO insert(ProductDTO dto) {
-        var entity = new Product();
+        final var entity = new Product();
         copyDtoToEntity(dto, entity);
-        entity = repository.save(entity);
-        return new ProductDTO(entity);
+        Product savedEntity = productRepository.save(entity);
+        return new ProductDTO(savedEntity);
     }
 
     @Transactional(readOnly = false)
@@ -57,12 +57,12 @@ public class ProductService {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
-            var entity = repository.getOne(id);
+            final var entity = productRepository.getOne(id);
             copyDtoToEntity(dto, entity);
 
-            var newEntity = repository.save(entity);
+            Product savedEntity = productRepository.save(entity);
 
-            return new ProductDTO(newEntity);
+            return new ProductDTO(savedEntity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
@@ -71,7 +71,7 @@ public class ProductService {
     // não se coloca @Transactional aqui pois queremos que venha a exception
     public void delete(Long id) {
         try {
-            repository.deleteById(id);
+            productRepository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             // tentou deletar um ID que nao existe
             throw new ResourceNotFoundException("Id not found " + id);
@@ -83,7 +83,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public Page<ProductDTO> findAllPaged(PageRequest pageRequest) {
-        return repository.findAll(pageRequest)
+        return productRepository.findAll(pageRequest)
                 .map(ProductDTO::new);
     }
 

@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 @Service
 public class CategoryService {
     @Autowired
-    CategoryRepository repository;
+    CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true) // tem que ser o import do Hibernate (não do Javax)
     public List<CategoryDTO> findAll() {
-        return repository.findAll()
+        return categoryRepository.findAll()
                 .parallelStream()
                 .map(CategoryDTO::new)
                 .collect(Collectors.toList());
@@ -31,7 +31,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public CategoryDTO findById(Long id) {
-        var entity = repository.findById(id)
+        final var entity = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         return new CategoryDTO(entity);
@@ -39,10 +39,10 @@ public class CategoryService {
 
     @Transactional(readOnly = false)
     public CategoryDTO insert(CategoryDTO dto) {
-        var entity = new Category();
+        final var entity = new Category();
         entity.setName(dto.getName());
-        entity = repository.save(entity);
-        return new CategoryDTO(entity);
+        Category savedEntity = categoryRepository.save(entity);
+        return new CategoryDTO(savedEntity);
     }
 
     @Transactional(readOnly = false)
@@ -50,13 +50,13 @@ public class CategoryService {
         try {
 
             // cria apenas uma refência, sem puxar do banco de dados
-            var entity = repository.getOne(id);
+            final var entity = categoryRepository.getOne(id);
 
             entity.setName(dto.getName());
 
-            var newEntity = repository.save(entity);
+            Category savedEntity = categoryRepository.save(entity);
 
-            return new CategoryDTO(newEntity);
+            return new CategoryDTO(savedEntity);
         } catch (javax.persistence.EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
         }
@@ -65,7 +65,7 @@ public class CategoryService {
     // não se coloca @Transactional aqui pois queremos que venha a exception
     public void delete(Long id) {
         try {
-            repository.deleteById(id);
+            categoryRepository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             // tentou deletar um ID que nao existe
             throw new ResourceNotFoundException("Id not found " + id);
@@ -77,7 +77,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public Page<CategoryDTO> findAllPaged(PageRequest pageRequest) {
-        return repository.findAll(pageRequest)
+        return categoryRepository.findAll(pageRequest)
                 .map(CategoryDTO::new);
     }
 }
