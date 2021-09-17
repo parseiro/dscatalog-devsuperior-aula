@@ -1,8 +1,6 @@
 package com.devsuperior.dscatalog.services;
 
-import com.devsuperior.dscatalog.dto.CargoDTO;
 import com.devsuperior.dscatalog.dto.FuncionarioDTO;
-import com.devsuperior.dscatalog.entities.CargoEntity;
 import com.devsuperior.dscatalog.entities.FuncionarioEntity;
 import com.devsuperior.dscatalog.repository.CargoRepository;
 import com.devsuperior.dscatalog.repository.FuncionarioRepository;
@@ -56,7 +54,7 @@ public class FuncionarioService implements CrudService<FuncionarioEntity, Funcio
     }
 
     @Override
-    @Transactional(readOnly = false)
+    @Transactional
     public FuncionarioDTO update(Long id, final FuncionarioDTO dto) {
         try {
 
@@ -91,14 +89,22 @@ public class FuncionarioService implements CrudService<FuncionarioEntity, Funcio
                 .map(FuncionarioDTO::new);
     }
 
-    public void copyDtoToEntity(@NonNull FuncionarioDTO dto, @NonNull FuncionarioEntity entity) {
+    private void copyDtoToEntity(@NonNull FuncionarioDTO dto, @NonNull FuncionarioEntity entity) {
 //        assert(dto.getCargo() != null);
 
-        entity.setNome(dto.getName());
+        entity.setName(dto.getName());
         entity.setSexo(dto.getSexo());
         entity.setTelefone(dto.getTelefone());
 
-        var cargo = cargoRepository.getOne(dto.getCargo().getId());
-        entity.setCargo(cargo);
+        if (dto.getCargo() != null) {
+            var cargo = cargoRepository.getOne(dto.getCargo().getId());
+            entity.setCargo(cargo);
+        }
     }
+
+/*    public FuncionarioEntity createNewEntityFromDto(FuncionarioDTO dto) {
+        var entity = new FuncionarioEntity();
+        copyDtoToEntity(dto, entity);
+        return entity;
+    }*/
 }

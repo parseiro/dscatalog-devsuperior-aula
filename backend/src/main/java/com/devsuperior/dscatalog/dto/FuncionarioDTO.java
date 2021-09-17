@@ -31,7 +31,12 @@ public class FuncionarioDTO {
 
     public FuncionarioDTO(FuncionarioEntity entity) {
         this.id = entity.getId();
-        this.name = entity.getNome();
-        this.cargo = new CargoDTO(entity.getCargo());
+        this.name = entity.getName();
+        this.sexo = entity.getSexo();
+        this.telefone = entity.getTelefone();
+
+        if (entity.getCargo() != null) {
+            this.cargo = new CargoDTO(entity.getCargo());
+        }
     }
 }

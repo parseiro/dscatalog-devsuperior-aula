@@ -27,7 +27,7 @@ public class CargoDTO implements Serializable {
     @Getter
     private Set<FuncionarioDTO> funcionarios = new HashSet<>();
 
-    public CargoDTO(CargoEntity entity) {
+    public CargoDTO(@NonNull CargoEntity entity) {
         this.id = entity.getId();
         this.name = entity.getName();
     }

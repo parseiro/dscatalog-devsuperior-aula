@@ -27,11 +27,12 @@ public class CargoEntity implements Serializable {
     private String name;
 
     @Getter
-    @OneToMany(mappedBy = "cargo")
+    @OneToMany(mappedBy = "cargo", cascade = CascadeType.PERSIST)
     private Set<FuncionarioEntity> funcionarios;
 
-    public CargoEntity(CargoDTO dto) {
+    public CargoEntity(@NonNull CargoDTO dto) {
         super();
+        this.id = dto.getId();
         this.name = dto.getName();
     }
 }
