@@ -12,6 +12,7 @@ import javax.persistence.*;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "tb_category")
 @Entity
+@Builder
 public class Category implements Serializable {
     @Getter
     @Setter

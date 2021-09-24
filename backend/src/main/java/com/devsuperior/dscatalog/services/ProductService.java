@@ -2,8 +2,8 @@ package com.devsuperior.dscatalog.services;
 
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.entities.Product;
-import com.devsuperior.dscatalog.repository.CategoryRepository;
-import com.devsuperior.dscatalog.repository.ProductRepository;
+import com.devsuperior.dscatalog.repositories.CategoryRepository;
+import com.devsuperior.dscatalog.repositories.ProductRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +45,7 @@ public class ProductService {
     @Transactional(readOnly = false)
     public Product update(Long id, final Product dto) {
         try {
-
-            // cria apenas uma refência, sem puxar do banco de dados
+            // cria apenas uma referência, sem puxar do banco de dados
             final var entity = productRepository.getOne(id);
             copyDtoToEntity(dto, entity);
             final var savedEntity = productRepository.save(entity);
