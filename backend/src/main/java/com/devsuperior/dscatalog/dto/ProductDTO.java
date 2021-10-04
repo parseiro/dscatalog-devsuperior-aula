@@ -1,66 +1,105 @@
 package com.devsuperior.dscatalog.dto;
 
-import com.devsuperior.dscatalog.entities.Category;
-import com.devsuperior.dscatalog.entities.Product;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import java.math.BigDecimal;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class ProductDTO {
-    @Getter
-    @Setter
-    @EqualsAndHashCode.Include
-    private Long id;
+import com.devsuperior.dscatalog.entities.Category;
+import com.devsuperior.dscatalog.entities.Product;
 
-    @Getter
-    @Setter
-    private String name;
+public class ProductDTO implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    @Column(columnDefinition = "TEXT")
-    @Getter
-    @Setter
-    private String description;
+	private Long id;
+	private String name;
+	private String description;
+	private Double price;
+	private String imgUrl;
+	private Instant date;
+	
+	private List<CategoryDTO> categories = new ArrayList<>();
+	
+	public ProductDTO() {
+	}
 
-    @Getter
-    @Setter
-    private BigDecimal price;
+	public ProductDTO(Long id, String name, String description, Double price, String imgUrl, Instant date) {
+		this.id = id;
+		this.name = name;
+		this.description = description;
+		this.price = price;
+		this.imgUrl = imgUrl;
+		this.date = date;
+	}
+	
+	public ProductDTO(Product entity) {
+		this.id = entity.getId();
+		this.name = entity.getName();
+		this.description = entity.getDescription();
+		this.price = entity.getPrice();
+		this.imgUrl = entity.getImgUrl();
+		this.date = entity.getDate();
+	}
+	
+	public ProductDTO(Product entity, Set<Category> categories) {
+		this(entity);
+		categories.forEach(cat -> this.categories.add(new CategoryDTO(cat)));
+	}
 
-    @Getter
-    @Setter
-    private String imgUrl;
+	public Long getId() {
+		return id;
+	}
 
-    @Getter
-    @Setter
-    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
-    private Instant date;
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    @Getter
-    private List<CategoryDTO> categories = new ArrayList<>();
+	public String getName() {
+		return name;
+	}
 
-    public ProductDTO(Product entity) {
-        this.id = entity.getId();
-        this.name = entity.getName();
-        this.description = entity.getDescription();
-        this.price = entity.getPrice();
-        this.imgUrl = entity.getImgUrl();
-        this.date = entity.getDate();
+	public void setName(String name) {
+		this.name = name;
+	}
 
-        entity.getCategories().parallelStream()
-                .map(CategoryDTO::new)
-                .forEach(c -> this.categories.add(c));
-    }
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Double getPrice() {
+		return price;
+	}
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+
+	public String getImgUrl() {
+		return imgUrl;
+	}
+
+	public void setImgUrl(String imgUrl) {
+		this.imgUrl = imgUrl;
+	}
+
+	public Instant getDate() {
+		return date;
+	}
+
+	public void setDate(Instant date) {
+		this.date = date;
+	}
+
+	public List<CategoryDTO> getCategories() {
+		return categories;
+	}
+
+	public void setCategories(List<CategoryDTO> categories) {
+		this.categories = categories;
+	}
 }
